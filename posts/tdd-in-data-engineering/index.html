@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<meta name="theme-color" content="#000000">
+	<meta name="msapplication-TileColor" content="#000000">
+<meta itemprop="name" content="TDD (Trust Driven Development) in Data Engineering">
+<meta itemprop="description" content="A practical guide for building reliable data pipelines using Metorikku and Deequ
+In recent years, our data platform has experienced exponential growth. Hundreds of new Data sources, including databases, streaming Kafka topics, data warehouse tables, Elasticsearch indices and Parquet files are constantly extracted, transformed and loaded into various formats.
+The initial users of the data layer were data engineers writing pipelines in Scala. This approach didn’t tolerate rapid growth and failed to scale.">
+<meta itemprop="datePublished" content="2020-10-11T00:00:00+00:00" />
+<meta itemprop="dateModified" content="2020-10-11T00:00:00+00:00" />
+<meta itemprop="wordCount" content="1346">
+
+
+
+<meta itemprop="keywords" content="Data Quality,Deequ,Spark,Metorikku,Big Data," />
+<meta property="og:title" content="TDD (Trust Driven Development) in Data Engineering" />
+<meta property="og:description" content="A practical guide for building reliable data pipelines using Metorikku and Deequ
+In recent years, our data platform has experienced exponential growth. Hundreds of new Data sources, including databases, streaming Kafka topics, data warehouse tables, Elasticsearch indices and Parquet files are constantly extracted, transformed and loaded into various formats.
+The initial users of the data layer were data engineers writing pipelines in Scala. This approach didn’t tolerate rapid growth and failed to scale." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://ronbarabash.github.io/posts/tdd-in-data-engineering/" />
+<meta property="article:published_time" content="2020-10-11T00:00:00+00:00" />
+<meta property="article:modified_time" content="2020-10-11T00:00:00+00:00" />
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="TDD (Trust Driven Development) in Data Engineering"/>
+<meta name="twitter:description" content="A practical guide for building reliable data pipelines using Metorikku and Deequ
+In recent years, our data platform has experienced exponential growth. Hundreds of new Data sources, including databases, streaming Kafka topics, data warehouse tables, Elasticsearch indices and Parquet files are constantly extracted, transformed and loaded into various formats.
+The initial users of the data layer were data engineers writing pipelines in Scala. This approach didn’t tolerate rapid growth and failed to scale."/>
+
+	<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+	<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+	<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+	<link rel="manifest" href="/site.webmanifest">
+	<link rel="mask-icon" href="/safari-pinned-tab.svg" color="">
+	<link rel="shortcut icon" href="/favicon.ico">
+
+	<title>TDD (Trust Driven Development) in Data Engineering</title>
+	<link rel="stylesheet" href="https://ronbarabash.github.io/css/style.min.12d30b2baeec0db86fdac707f749103264da45ab3451b689aa4302d476920c10.css" integrity="sha256-EtMLK67sDbhv2scH90kQMmTaRas0UbaJqkMC1HaSDBA=" crossorigin="anonymous">
+	
+</head>
+
+<body id="page">
+	
+	<header id="site-header" class="animated slideInUp">
+		<div class="hdr-wrapper section-inner">
+			<div class="hdr-left">
+				<div class="site-branding">
+					<a href="https://ronbarabash.github.io/">Ron Barabash</a>
+				</div>
+				<nav class="site-nav hide-in-mobile">
+					
+				<a href="https://ronbarabash.github.io/posts/">Posts</a>
+				<a href="https://ronbarabash.github.io/about-ron/">About</a>
+
+				</nav>
+			</div>
+			<div class="hdr-right hdr-icons">
+				<span class="hdr-social hide-in-mobile"><a href="https://twitter.com/RonBarab" target="_blank" rel="noopener me" title="Twitter"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"></path></svg></a><a href="https://www.linkedin.com/in/ron-barabash-514b4432/" target="_blank" rel="noopener me" title="Linkedin"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg></a><a href="https://medium.com/@ronbarabash" target="_blank" rel="noopener me" title="Medium"><svg xmlns="http://www.w3.org/2000/svg" class="feather feather-link" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a><a href="https://github.com/RonBarabash" target="_blank" rel="noopener me" title="Github"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg></a></span><button id="menu-btn" class="hdr-btn" title="Menu"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-menu"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg></button>
+			</div>
+		</div>
+	</header>
+	<div id="mobile-menu" class="animated fast">
+		<ul>
+			<li><a href="https://ronbarabash.github.io/posts/">Posts</a></li>
+			<li><a href="https://ronbarabash.github.io/about-ron/">About</a></li>
+		</ul>
+	</div>
+
+
+	<main class="site-main section-inner animated fadeIn faster">
+		<article class="thin">
+			<header class="post-header">
+				<div class="post-meta"><span>Oct 11, 2020</span></div>
+				<h1>TDD (Trust Driven Development) in Data Engineering</h1>
+			</header>
+			<div class="content">
+				<p>A practical guide for building reliable data pipelines using Metorikku and Deequ</p>
+<p>In recent years, our data platform has experienced exponential growth. Hundreds of new Data sources, including databases, streaming Kafka topics, data warehouse tables, Elasticsearch indices and Parquet files are constantly extracted, transformed and loaded into various formats.</p>
+<p>The initial users of the data layer were data engineers writing pipelines in Scala. This approach didn’t tolerate rapid growth and failed to scale. So, as other generalist developers started to gain interest in the data layer, they were offered to develop and maintain their own pipelines. That’s how we introduced <a href="https://github.com/yotpoltd/metorikku">Metorikku</a>, a library based on Spark, which uses simple YAML configuration files to define ETL pipelines. Metorikku offers a variety of supported input and output formats such as Parquet files, Avro, JSON and CSV and various sources such as S3, Kafka, Redshift, Snowflake, JDBC and more…</p>
+<p>Metorikku provides a clean and simple way to create a pipeline. But what about maintenance?</p>
+<p>How do we verify it runs as planned on each designated duration? That is actually writing the data? That the data covers all our use-cases? That the data is of <strong>High Quality</strong>?</p>
+<p><img src="https://cdn-images-1.medium.com/max/2000/0*CiJDC8eUbaRddlYV" alt=""></p>
+<p><img src="https://cdn-images-1.medium.com/max/2000/0*s3fwyKcEB_Ih2xZz" alt="This work is licensed under a Creative Commons Attribution-NonCommercial 2.5 Generic License."><em>This work is licensed under a <a href="http://creativecommons.org/licenses/by-nc/2.5/">Creative Commons Attribution-NonCommercial 2.5 Generic License</a>.</em></p>
+<h2 id="a-brief-on-data-quality"><strong>A Brief on Data Quality</strong><a href="#a-brief-on-data-quality" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<blockquote>
+<p><em><strong>“Data is the fuel for intelligent decision making for both humans and machines. Just like high quality fuel ensures that jet engines run efficiently and reliably in the long run, high quality data fuels effective and reliable decision making”.</strong></em>
+<a href="https://www.thoughtworks.com/profiles/ellen-koenig">Ellen König</a></p>
+</blockquote>
+<p>Data Quality is somewhat of a controversial topic, we all know it’s important, but it’s just so hard and tedious to fix data quality issues that sometimes we just ignore it.</p>
+<p>Well, How would you go about fixing data quality issues?</p>
+<ul>
+<li>
+<p>Discovery — Usually when a data set has been contaminated with bad quality data, we find out about it in retrospect, which leaves the consumers of data already offended by it.</p>
+</li>
+<li>
+<p>Investigation — We need to trace back what might have caused this phenomenon, is it affecting something else? Is it in the pipeline itself? Is it the raw data?</p>
+</li>
+<li>
+<p>Fixing — We need to fix the problem at the root cause, is this data source in our control? It might come from other teams? Other products? We should upload a fix to ignore this bug until it is fixed by someone else?</p>
+</li>
+</ul>
+<p>There are just too many variables and this process can result eventually in a temporary patch that would later become permanent.</p>
+<h2 id="what-have-we-done-up-until-now"><strong>What have we done up until now?</strong><a href="#what-have-we-done-up-until-now" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>If any of the input data sources are missing or corrupted, we may experience a chain reaction in all the dependent outputs and the most terrifying thing about it is that we may not even know.</p>
+<p>We understood early on that these sort of issues are posing a critical failure point in our architecture, so we started to implement various solutions to better monitor our data pipelines quality</p>
+<h3 id="instrumentation-reporting"><strong>Instrumentation reporting</strong><a href="#instrumentation-reporting" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h3>
+<p>We systematically added simple steps to measure specific KPIs such as output size, null values count, id duplications, etc… These values were written to an Influx time-series DB and on top of that, we created dashboards in Grafana to visualize these values.
+This strategy allowed us to:</p>
+<ul>
+<li>
+<p>Create alerts when experiencing irregular values.</p>
+</li>
+<li>
+<p>Track the recurring execution of a pipeline.</p>
+</li>
+<li>
+<p>Visualize some of the business metrics we find interesting.</p>
+</li>
+</ul>
+<p>This strategy pretty much covers all our needs.</p>
+<p><em><strong>The problem is that it’s super high-friction and requires you to think of the KPIs, write the instrumentation steps, create the graphs and define alerts.</strong></em></p>
+<h3 id="data-lake--data-warehouse-monitoring"><strong>Data Lake / Data Warehouse Monitoring</strong><a href="#data-lake--data-warehouse-monitoring" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h3>
+<p>Using BI tools such as Redash to visualize actual data saved in our data lake/warehouse also proved to be quite an effective solution. It allowed us to monitor, not just a pipeline, but a complete use case. We can compare different tables to find matches or mismatches, to count daily accumulation of rows and basically to monitor data aggregated throughout the entire lifespan of the data sources.
+Here we also face a high-friction process that requires the knowledge and maintenance of BI tools, in our case Redash.
+This also proves to be quite expensive since we must have an ongoing DWH cluster or query engine to constantly sample the data.
+Another solution, proven to be very valuable, is the use of automatic anomaly detections around the data assets with tools such as <a href="https://www.montecarlodata.com/">MonteCarlo</a>.</p>
+<p>The main disadvantage of both of these approaches is <strong>that we monitor data that has already been saved in our sources</strong>.</p>
+<p>We may already be in the midst of the cascading disaster chain and we’re not entirely sure which dependent pipelines had already been affected.</p>
+<h3 id="wouldnt-it-be-great-if-could-preempt-these-violations-before-they-are-messing-our-entire-data-sources"><strong>Wouldnt it be great if could preempt these violations before they are messing our entire data sources?</strong><a href="#wouldnt-it-be-great-if-could-preempt-these-violations-before-they-are-messing-our-entire-data-sources" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h3>
+<p><img src="https://cdn-images-1.medium.com/max/7502/1*XoMSIQimUujLWvXY-vlwoQ.png" alt=""></p>
+<h2 id="ok-so-what-are-you-suggesting"><strong>Ok. So what are you suggesting?</strong><a href="#ok-so-what-are-you-suggesting" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>In the past couple of years, we have seen the emergence of several open-source tools in the space of data quality.</p>
+<p><a href="https://griffin.apache.org/">Apache Griffin</a> from eBay, <a href="https://github.com/awslabs/deequ">Deequ</a> from AWS, <a href="https://greatexpectations.io/">Great Expectations</a>, and more.</p>
+<p>As new data lake formats are also on the rise, tools like <a href="https://hudi.apache.org/">Hudi</a>, <a href="https://delta.io/">Delta</a> designed to help in versioning the data, and transform the state of certain data sources to a given point in time. With ACID like transactions, These tools also can help in reproducing problems and fixing datasets after they have been contaminated.</p>
+<p>Another cool tool is <a href="https://lakefs.io/">LakeFS</a>, which essentially brings a “git-like” experience to your data, helping you run data pipelines on different “branches” and merge the results if they are valid and correct.</p>
+<h2 id="metorikku--deequ--"><strong>Metorikku + Deequ = ❤️</strong><a href="#metorikku--deequ--" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>Deequ is an open-source library built on top of Apache Spark for defining “unit tests for data”.</p>
+<p>it enables the user to define rules and validations on top of Spark data frames and being used internally at Amazon for verifying the quality of many large production datasets.</p>
+<p>We have integrated Deequ as a part of Metorikku, helping to define data quality validations in the same way you would define an SQL step within your pipeline.</p>
+<p>We have also implemented a “Log Level” feature, when set to “Critical”, data quality validations can fail an entire pipeline before writing data to its designated output.</p>
+<p>Adding Deequ as a part of our pipeline definition will enable you to monitor and validate that the data is of high quality <strong>in transit</strong>!</p>
+<pre><code>steps:
+- dataFrameName: moviesWithRatings
+  sql:
+    SELECT userid,
+           movies.movieid,
+           rating,
+           timestamp,
+           title,
+           genres
+    FROM ratings
+    JOIN movies ON ratings.movieid = movies.movieid
+  dq:
+    level: warn
+    checks:
+      - isComplete:
+          column: movieid
+      - isUnique:
+          level: warn
+          column: rating
+
+- dataFrameName: moviesWithRatings
+  sql:
+    SELECT CONCAT(userid, ' ',  movieid) AS userid_movieid
+    FROM moviesWithRatings
+  dq:
+    level: error
+    checks:
+      - isUnique:
+          column: userid_movieid
+output:
+- dataFrameName: moviesWithRatings
+  outputType: Parquet
+  outputOptions:
+    saveMode: Overwrite
+    path: moviesWithRatings.parquet
+</code></pre>
+<p><strong>This is huge!!</strong> We can prevent bad quality data from being written to our production systems and keep a close eye on how the data is behaving in production.</p>
+<p>We decided to treat Data Quality validations just like we treat Unit Tests. We envision data quality as being a key step in any data pipeline which is now being shipped with Data Quality checks and validations in place.</p>
+<p>This type of strategy will make each pipeline more <strong>robust</strong>, <strong>resilient,</strong> and <strong>trustworthy.</strong></p>
+<p>Hence the title of this blog is “<strong>Trust Driven Development</strong>”</p>
+<p><img src="https://cdn-images-1.medium.com/max/12032/1*Gvr7iTYmQZP-R2h__dscPA.jpeg" alt="In Transit! Photo by CHUTTERSNAP on Unsplash"><em>In Transit! Photo by <a href="https://unsplash.com/@chuttersnap?utm_source=unsplash&amp;utm_medium=referral&amp;utm_content=creditCopyText">CHUTTERSNAP</a> on <a href="https://unsplash.com/s/photos/in-transit?utm_source=unsplash&amp;utm_medium=referral&amp;utm_content=creditCopyText">Unsplash</a></em></p>
+<p>We have implemented just a mere fraction of what Deequ is capable of, and we tend to add more operators based on use cases such as anomaly detection, normal distribution, and more (Open source contribution are most welcome)</p>
+<h2 id="whats-next"><strong>What’s Next?</strong><a href="#whats-next" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>There are plenty of things to do around Data Quality in the world of Big Data.</p>
+<p>We are certain that Metorikku + Deequ can help you by starting small.</p>
+<p>By adding data quality validations to your day-to-day data engineering tasks you will substantially reduce ongoing crises and data pipeline maintenance.</p>
+<p>These and more will help you build a pristine and crystal clear data “reservoir”, instead of a messy and muddy data lake.</p>
+<p>I would like to thank the incredibly talented <a href="https://medium.com/@liebstein">Assaf Liebstein</a> for co-authoring this blog!</p>
+<h2 id="appendix"><strong>Appendix</strong><a href="#appendix" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<ul>
+<li>
+<p><a href="https://www.thoughtworks.com/insights/blog/how-much-can-you-trust-your-data">https://www.thoughtworks.com/insights/blog/how-much-can-you-trust-your-data</a></p>
+</li>
+<li>
+<p><a href="https://aws.amazon.com/blogs/big-data/build-an-automatic-data-profiling-and-reporting-solution-with-amazon-emr-aws-glue-and-amazon-quicksight/">https://aws.amazon.com/blogs/big-data/build-an-automatic-data-profiling-and-reporting-solution-with-amazon-emr-aws-glue-and-amazon-quicksight/</a></p>
+</li>
+</ul>
+
+			</div>
+			<hr class="post-end">
+			<footer class="post-info">
+				<p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-feather"><path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"></path><line x1="16" y1="8" x2="2" y2="22"></line><line x1="17.5" y1="15" x2="9" y2="15"></line></svg>Ron Barabash &amp; Assaf Liebstein</p>
+				<p>
+					<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-tag meta-icon"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7" y2="7"></line></svg><span class="tag"><a href="https://ronbarabash.github.io/tags/data-quality">Data Quality</a></span><span class="tag"><a href="https://ronbarabash.github.io/tags/deequ">Deequ</a></span><span class="tag"><a href="https://ronbarabash.github.io/tags/spark">Spark</a></span><span class="tag"><a href="https://ronbarabash.github.io/tags/metorikku">Metorikku</a></span><span class="tag"><a href="https://ronbarabash.github.io/tags/big-data">Big Data</a></span>
+				</p>
+				<p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file-text"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>1346 Words</p>
+				<p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-calendar"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>2020-10-11 03:00 &#43;0300</p>
+			</footer>
+		</article>
+		<div class="post-nav thin">
+		</div>
+		<div id="comments" class="thin">
+</div>
+	</main>
+
+	<footer id="site-footer" class="section-inner thin animated fadeIn faster">
+		<p>&copy; 2020 <a href="https://ronbarabash.github.io/">Ron Barabash</a></p>
+		<p>
+			Made with <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> &#183; Theme <a href="https://github.com/Track3/hermit" target="_blank" rel="noopener">Hermit</a> &#183; <a href="https://ronbarabash.github.io/posts/index.xml" target="_blank" title="rss"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-rss"><path d="M4 11a9 9 0 0 1 9 9"></path><path d="M4 4a16 16 0 0 1 16 16"></path><circle cx="5" cy="19" r="1"></circle></svg></a>
+		</p>
+	</footer>
+
+
+
+	<script src="https://ronbarabash.github.io/js/bundle.min.4a9a0ac3d2217822c7865b4161e6c2a71de1d70492264337755427898dd718f6.js" integrity="sha256-SpoKw9IheCLHhltBYebCpx3h1wSSJkM3dVQniY3XGPY=" crossorigin="anonymous"></script>
+	
+
+</body>
+
+</html>
